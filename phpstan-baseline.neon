@@ -1,0 +1,139 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method DeployTeam\\IntercallLaravel\\Bridge\\LaravelContainer\:\:__construct\(\) has a parameter \$laravelContainer with a type declaration of Illuminate\\Contracts\\Container\\Container, but containers should not be injected\.$#'
+			identifier: ergebnis.noParameterWithContainerTypeDeclaration
+			count: 1
+			path: src/Bridge/LaravelContainer.php
+
+		-
+			message: '#^Cannot call method debug\(\) on mixed\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: src/Bridge/LaravelLogger.php
+
+		-
+			message: '#^Cannot call method error\(\) on mixed\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: src/Bridge/LaravelLogger.php
+
+		-
+			message: '#^Cannot call method info\(\) on mixed\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: src/Bridge/LaravelLogger.php
+
+		-
+			message: '#^Cannot call method warning\(\) on mixed\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: src/Bridge/LaravelLogger.php
+
+		-
+			message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Redis\:\:blpop\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Bridge/LaravelRedis.php
+
+		-
+			message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Redis\:\:brpop\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Bridge/LaravelRedis.php
+
+		-
+			message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Redis\:\:exists\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Bridge/LaravelRedis.php
+
+		-
+			message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Redis\:\:expire\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Bridge/LaravelRedis.php
+
+		-
+			message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Redis\:\:get\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Bridge/LaravelRedis.php
+
+		-
+			message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Redis\:\:incr\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Bridge/LaravelRedis.php
+
+		-
+			message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Redis\:\:lpush\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Bridge/LaravelRedis.php
+
+		-
+			message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Redis\:\:publish\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Bridge/LaravelRedis.php
+
+		-
+			message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Redis\:\:setex\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Bridge/LaravelRedis.php
+
+		-
+			message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Redis\:\:ttl\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Bridge/LaravelRedis.php
+
+		-
+			message: '#^Call to an undefined method Psr\\Log\\LoggerInterface\:\:channel\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: src/Http/Controllers/IntercallController.php
+
+		-
+			message: '#^Call to an undefined static method DeployTeam\\Intercall\\Contracts\\IntercallEvent\:\:fromArray\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: src/Http/Controllers/IntercallController.php
+
+		-
+			message: '#^Calling uniqid\(\) is forbidden, it is not a cryptographically secure generator, use random_bytes\(\) instead\.$#'
+			identifier: disallowed.function
+			count: 2
+			path: src/Http/Controllers/IntercallController.php
+
+		-
+			message: '#^Cannot access offset ''channel'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 1
+			path: src/Http/Controllers/IntercallController.php
+
+		-
+			message: '#^Cannot access offset ''enabled'' on mixed\.$#'
+			identifier: offsetAccess.nonOffsetAccessible
+			count: 3
+			path: src/Http/Controllers/IntercallController.php
+
+		-
+			message: '#^Cannot call method handle\(\) on mixed\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: src/Http/Controllers/IntercallController.php
+
+		-
+			message: '#^Method DeployTeam\\Intercall\\Services\\IntercallAuth\:\:verifyToken\(\) invoked with 1 parameter, 2 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: src/Http/Controllers/IntercallController.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between DeployTeam\\Intercall\\Contracts\\EventHandler and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: src/Http/Controllers/IntercallController.php
