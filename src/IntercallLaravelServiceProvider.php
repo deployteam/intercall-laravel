@@ -19,6 +19,7 @@ use DeployTeam\Intercall\Services\EventRegistry;
 use DeployTeam\Intercall\Services\HeartbeatChecker;
 use DeployTeam\Intercall\Services\IdempotencyManager;
 use DeployTeam\Intercall\Services\IntercallAuth;
+use DeployTeam\Intercall\Contracts\IntercallHubContract;
 use DeployTeam\Intercall\Services\IntercallHub;
 use DeployTeam\Intercall\Services\ListenerRegistry;
 use DeployTeam\Intercall\Services\MessageSerializer;
@@ -228,6 +229,8 @@ class IntercallLaravelServiceProvider extends PackageServiceProvider
                 config('intercall'),
             );
         });
+
+        $this->app->alias(IntercallHub::class, IntercallHubContract::class);
 
         $this->app->singleton(IntercallController::class, function ($app): IntercallController {
             return new IntercallController(
