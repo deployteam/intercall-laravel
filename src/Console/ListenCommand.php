@@ -32,6 +32,7 @@ class ListenCommand extends Command
         $watchIgnorePatterns = config('intercall.watch.ignore', []);
         $watchPollInterval = config('intercall.watch.poll_interval', 1);
         $watchRestartDelay = config('intercall.watch.restart_delay', 1);
+        $restartCommand = $this->buildRestartCommand();
 
         $command = new CoreListenCommand(
             $listener,
@@ -42,9 +43,34 @@ class ListenCommand extends Command
             $watchIgnorePatterns,
             $watchPollInterval,
             $watchRestartDelay,
+            $restartCommand,
         );
 
         return $command->execute();
+    }
+
+    protected function buildRestartCommand(): string
+    {
+        $phpBinary = PHP_BINARY;
+        $artisanPath = base_path('artisan');
+
+        $parts = [
+            escapeshellarg($phpBinary),
+            escapeshellarg($artisanPath),
+            'intercall:listen',
+        ];
+
+        $transport = $this->option('transport');
+        if ($transport !== null) {
+            $parts[] = '--transport=' . escapeshellarg((string) $transport);
+        }
+
+        $workers = $this->option('workers');
+        if ($workers !== null && $workers !== '1') {
+            $parts[] = '--workers=' . escapeshellarg((string) $workers);
+        }
+
+        return implode(' ', $parts);
     }
 
     protected function configureLogLevel(Logger $logger): void
