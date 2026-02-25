@@ -38,6 +38,7 @@ use DeployTeam\IntercallLaravel\Bridge\LaravelJobDispatcher;
 use DeployTeam\IntercallLaravel\Bridge\LaravelLogger;
 use DeployTeam\IntercallLaravel\Bridge\LaravelRedis;
 use DeployTeam\IntercallLaravel\Console\ListenCommand;
+use DeployTeam\IntercallLaravel\Console\ReloadCommand;
 use DeployTeam\IntercallLaravel\Http\Controllers\IntercallController;
 use Illuminate\Support\Facades\Event;
 use Spatie\LaravelPackageTools\Package;
@@ -52,6 +53,7 @@ class IntercallLaravelServiceProvider extends PackageServiceProvider
             ->hasConfigFile()
             ->hasCommands([
                 ListenCommand::class,
+                ReloadCommand::class,
             ]);
 
         if (config('intercall.http_fallback.enabled', true)) {

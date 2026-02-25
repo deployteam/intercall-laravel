@@ -34,6 +34,9 @@ class ListenCommand extends Command
         $watchRestartDelay = config('intercall.watch.restart_delay', 1);
         $restartCommand = $this->buildRestartCommand();
 
+        $transport = $this->option('transport');
+        $pidFilePath = $transport !== null ? storage_path("intercall/{$transport}.pid") : null;
+
         $command = new CoreListenCommand(
             $listener,
             $systemRegistry,
@@ -44,6 +47,7 @@ class ListenCommand extends Command
             $watchPollInterval,
             $watchRestartDelay,
             $restartCommand,
+            $pidFilePath,
         );
 
         return $command->execute();
