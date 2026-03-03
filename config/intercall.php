@@ -73,6 +73,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | ACK Timeout
+    |--------------------------------------------------------------------------
+    |
+    | How long (in seconds) to wait for an acknowledgement from the remote
+    | system before trying the next transport. If the remote system has
+    | already acknowledged (persistent key), the dispatcher will wait
+    | for the response instead of retrying.
+    |
+    */
+    'ack_timeout' => env('INTERCALL_ACK_TIMEOUT', 5),
+
+    /*
+    |--------------------------------------------------------------------------
     | HTTP Fallback
     |--------------------------------------------------------------------------
     |
