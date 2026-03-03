@@ -89,4 +89,8 @@ class LaravelRedis implements Redis
     {
         return (int) LaravelRedisFacade::del($key);
     }
+
+    public function disconnect(): void
+    {
+    }
 }
