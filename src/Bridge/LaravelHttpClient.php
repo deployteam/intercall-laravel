@@ -14,6 +14,10 @@ class LaravelHttpClient implements HttpClient
     {
         $request = Http::timeout($options['timeout'] ?? 30);
 
+        if (!empty($options['insecure'])) {
+            $request = $request->withoutVerifying();
+        }
+
         if (isset($options['headers'])) {
             $request = $request->withHeaders($options['headers']);
         }
