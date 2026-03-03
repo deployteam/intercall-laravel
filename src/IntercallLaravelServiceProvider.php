@@ -193,7 +193,6 @@ class IntercallLaravelServiceProvider extends PackageServiceProvider
         $this->app->singleton(RequestDispatcher::class, function ($app): RequestDispatcher {
             return new RequestDispatcher(
                 $app->make(TransportManager::class),
-                $app->make(IntercallRedis::class),
                 $app->make(Logger::class),
                 $app->make(IntercallAuth::class),
                 $app->make(RateLimiter::class),
