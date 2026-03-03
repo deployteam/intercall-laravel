@@ -71,6 +71,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Shutdown Timeout
+    |--------------------------------------------------------------------------
+    |
+    | How long (in seconds) to wait for workers to finish their current
+    | request before force-killing them during reload or shutdown.
+    |
+    */
+    'shutdown_timeout' => env('INTERCALL_SHUTDOWN_TIMEOUT', 5),
+
+    /*
+    |--------------------------------------------------------------------------
     | Listener Heartbeat
     |--------------------------------------------------------------------------
     |

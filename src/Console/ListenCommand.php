@@ -36,6 +36,7 @@ class ListenCommand extends Command
 
         $transport = $this->option('transport');
         $pidFilePath = $transport !== null ? storage_path("intercall/{$transport}.pid") : null;
+        $shutdownTimeout = (int) config('intercall.shutdown_timeout', 5);
 
         $command = new CoreListenCommand(
             $listener,
@@ -48,6 +49,7 @@ class ListenCommand extends Command
             $watchRestartDelay,
             $restartCommand,
             $pidFilePath,
+            $shutdownTimeout,
         );
 
         return $command->execute();
