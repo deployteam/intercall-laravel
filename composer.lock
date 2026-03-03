@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f6d352b82edc85ac97dda8acaeaafe45",
+    "content-hash": "367c77eea996c79ea3c554793325381c",
     "packages": [
         {
             "name": "brick/math",
@@ -137,16 +137,16 @@
         },
         {
             "name": "deployteam/intercall",
-            "version": "0.4.0",
+            "version": "0.5.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/deployteam/intercall.git",
-                "reference": "4aab59c8cea3b53fcd837ea57886adbd6d45d351"
+                "reference": "b8bb6b216467eb41dd9e8c9c42add65a49c94824"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/deployteam/intercall/zipball/4aab59c8cea3b53fcd837ea57886adbd6d45d351",
-                "reference": "4aab59c8cea3b53fcd837ea57886adbd6d45d351",
+                "url": "https://api.github.com/repos/deployteam/intercall/zipball/b8bb6b216467eb41dd9e8c9c42add65a49c94824",
+                "reference": "b8bb6b216467eb41dd9e8c9c42add65a49c94824",
                 "shasum": ""
             },
             "require": {
@@ -202,9 +202,9 @@
             ],
             "support": {
                 "issues": "https://github.com/deployteam/intercall/issues",
-                "source": "https://github.com/deployteam/intercall/tree/0.4.0"
+                "source": "https://github.com/deployteam/intercall/tree/0.5.0"
             },
-            "time": "2026-02-25T13:06:04+00:00"
+            "time": "2026-03-03T10:22:00+00:00"
         },
         {
             "name": "dflydev/dot-access-data",
