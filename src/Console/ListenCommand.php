@@ -55,28 +55,26 @@ class ListenCommand extends Command
         return $command->execute();
     }
 
-    protected function buildRestartCommand(): string
+    /** @return array<int, string> */
+    protected function buildRestartCommand(): array
     {
-        $phpBinary = PHP_BINARY;
-        $artisanPath = base_path('artisan');
-
         $parts = [
-            escapeshellarg($phpBinary),
-            escapeshellarg($artisanPath),
+            PHP_BINARY,
+            base_path('artisan'),
             'intercall:listen',
         ];
 
         $transport = $this->option('transport');
         if ($transport !== null) {
-            $parts[] = '--transport=' . escapeshellarg((string) $transport);
+            $parts[] = '--transport=' . $transport;
         }
 
         $workers = $this->option('workers');
         if ($workers !== null && $workers !== '1') {
-            $parts[] = '--workers=' . escapeshellarg((string) $workers);
+            $parts[] = '--workers=' . $workers;
         }
 
-        return implode(' ', $parts);
+        return $parts;
     }
 
     protected function configureLogLevel(Logger $logger): void
