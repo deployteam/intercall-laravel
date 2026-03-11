@@ -80,7 +80,7 @@ class IntercallLaravelServiceProvider extends PackageServiceProvider
         $this->app->make(SystemRegistry::class);
 
         $this->app->singleton(IntercallRedis::class, function (): LaravelRedis {
-            return new LaravelRedis();
+            return new LaravelRedis(config('intercall.redis.connection', 'default'));
         });
 
         $this->app->singleton(Logger::class, function (): LaravelLogger {

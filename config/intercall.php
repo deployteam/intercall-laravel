@@ -115,6 +115,7 @@ return [
     |
     */
     'redis' => [
+        'connection' => env('INTERCALL_REDIS_CONNECTION', 'default'),
         'prefix' => env('INTERCALL_REDIS_PREFIX', ''),
     ],
 

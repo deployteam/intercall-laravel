@@ -5,61 +5,109 @@ declare(strict_types=1);
 namespace DeployTeam\IntercallLaravel\Bridge;
 
 use DeployTeam\Intercall\Contracts\Bridge\Redis;
+use Illuminate\Redis\Connections\Connection;
 use Illuminate\Support\Facades\Redis as LaravelRedisFacade;
 
 class LaravelRedis implements Redis
 {
+    public function __construct(
+        private readonly string $connection = 'default',
+    ) {}
+
+    private function redis(): Connection
+    {
+        return LaravelRedisFacade::connection($this->connection);
+    }
+
+    private function reconnect(): void
+    {
+        try {
+            $this->redis()->disconnect();
+        } catch (\Throwable) {
+        }
+
+        LaravelRedisFacade::purge($this->connection);
+    }
+
     public function lpush(string $key, string $value): int|false
     {
-        return LaravelRedisFacade::lpush($key, $value);
+        $result = $this->redis()->lpush($key, $value);
+
+        if ($result === false) {
+            $this->reconnect();
+            return $this->redis()->lpush($key, $value);
+        }
+
+        return $result;
     }
 
     public function brpop(string|array $keys, int $timeout): ?array
     {
-        $result = LaravelRedisFacade::brpop($keys, $timeout);
+        $result = $this->redis()->brpop($keys, $timeout);
         return $result === null || $result === false ? null : $result;
     }
 
     public function blpop(string|array $keys, int $timeout): ?array
     {
-        $result = LaravelRedisFacade::blpop($keys, $timeout);
+        $result = $this->redis()->blpop($keys, $timeout);
         return $result === null || $result === false ? null : $result;
     }
 
     public function setex(string $key, int $ttl, string $value): bool
     {
-        return (bool) LaravelRedisFacade::setex($key, $ttl, $value);
+        $result = $this->redis()->setex($key, $ttl, $value);
+
+        if ($result === false) {
+            $this->reconnect();
+            return (bool) $this->redis()->setex($key, $ttl, $value);
+        }
+
+        return (bool) $result;
     }
 
     public function get(string $key): ?string
     {
-        $result = LaravelRedisFacade::get($key);
+        $result = $this->redis()->get($key);
         return $result === false || $result === null ? null : (string) $result;
     }
 
     public function exists(string $key): bool
     {
-        return (bool) LaravelRedisFacade::exists($key);
+        return (bool) $this->redis()->exists($key);
     }
 
     public function incr(string $key): int
     {
-        return LaravelRedisFacade::incr($key);
+        $result = $this->redis()->incr($key);
+
+        if ($result === false) {
+            $this->reconnect();
+            $result = $this->redis()->incr($key);
+        }
+
+        return (int) $result;
     }
 
     public function expire(string $key, int $ttl): bool
     {
-        return (bool) LaravelRedisFacade::expire($key, $ttl);
+        return (bool) $this->redis()->expire($key, $ttl);
     }
 
     public function ttl(string $key): int
     {
-        return LaravelRedisFacade::ttl($key);
+        return $this->redis()->ttl($key);
     }
 
     public function publish(string $channel, string $message): int
     {
-        return LaravelRedisFacade::publish($channel, $message);
+        $result = $this->redis()->publish($channel, $message);
+
+        if ($result === false) {
+            $this->reconnect();
+            return (int) $this->redis()->publish($channel, $message);
+        }
+
+        return $result;
     }
 
     /**
@@ -67,12 +115,12 @@ class LaravelRedis implements Redis
      */
     public function keys(string $pattern): array
     {
-        $keys = LaravelRedisFacade::keys($pattern);
+        $keys = $this->redis()->keys($pattern);
         if (!is_array($keys)) {
             return [];
         }
 
-        $prefix = config('database.redis.default.prefix');
+        $prefix = config("database.redis.{$this->connection}.prefix");
         if ($prefix === null || $prefix === '') {
             return $keys;
         }
@@ -87,10 +135,11 @@ class LaravelRedis implements Redis
 
     public function del(string $key): int
     {
-        return (int) LaravelRedisFacade::del($key);
+        return (int) $this->redis()->del($key);
     }
 
     public function disconnect(): void
     {
+        $this->reconnect();
     }
 }
