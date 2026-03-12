@@ -20,7 +20,7 @@
   ],
   "require": {
     "php": "^8.2",
-    "deployteam/intercall": "^0.8.1",
+    "deployteam/intercall": "^0.8.2",
     "illuminate/console": "^10.0 || ^11.0 || ^12.0",
     "illuminate/http": "^10.0 || ^11.0 || ^12.0",
     "illuminate/redis": "^10.0 || ^11.0 || ^12.0",
