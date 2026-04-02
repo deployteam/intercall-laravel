@@ -21,11 +21,11 @@
   "require": {
     "php": "^8.2",
     "deployteam/intercall": "^0.8.2",
-    "illuminate/console": "^10.0 || ^11.0 || ^12.0",
-    "illuminate/http": "^10.0 || ^11.0 || ^12.0",
-    "illuminate/redis": "^10.0 || ^11.0 || ^12.0",
-    "illuminate/routing": "^10.0 || ^11.0 || ^12.0",
-    "illuminate/support": "^10.0 || ^11.0 || ^12.0",
+    "illuminate/console": "^10.0 || ^11.0 || ^12.0 || ^13.0",
+    "illuminate/http": "^10.0 || ^11.0 || ^12.0 || ^13.0",
+    "illuminate/redis": "^10.0 || ^11.0 || ^12.0 || ^13.0",
+    "illuminate/routing": "^10.0 || ^11.0 || ^12.0 || ^13.0",
+    "illuminate/support": "^10.0 || ^11.0 || ^12.0 || ^13.0",
     "spatie/laravel-package-tools": "^1.92.7"
   },
   "require-dev": {
@@ -33,7 +33,7 @@
     "ergebnis/composer-normalize": "^2.48.2",
     "ergebnis/phpstan-rules": "^2.12",
     "mockery/mockery": "^1.6.12",
-    "orchestra/testbench": "^8.0 || ^9.0 || ^10.7",
+    "orchestra/testbench": "^8.0 || ^9.0 || ^10.7 || ^11.0",
     "php-cs-fixer/shim": "^3.90",
     "phpstan/phpstan": "^2.1.32",
     "phpstan/phpstan-deprecation-rules": "^2.0.3",
