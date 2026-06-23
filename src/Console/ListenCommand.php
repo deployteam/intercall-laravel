@@ -11,6 +11,7 @@ use DeployTeam\Intercall\Enums\LogLevel;
 use DeployTeam\Intercall\Services\RequestListener;
 use DeployTeam\IntercallLaravel\Bridge\LaravelConsoleOutput;
 use Illuminate\Console\Command;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class ListenCommand extends Command
 {
@@ -80,7 +81,11 @@ class ListenCommand extends Command
     protected function configureLogLevel(Logger $logger): void
     {
         $verbosity = $this->getOutput()->getVerbosity();
-        $logLevel = LogLevel::fromVerbosity($verbosity);
-        $logger->setMinimumLevel($logLevel);
+
+        if ($verbosity <= OutputInterface::VERBOSITY_NORMAL) {
+            return;
+        }
+
+        $logger->setMinimumLevel(LogLevel::fromVerbosity($verbosity));
     }
 }
