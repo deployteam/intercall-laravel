@@ -26,6 +26,7 @@ use DeployTeam\Intercall\Services\MessageSerializer;
 use DeployTeam\Intercall\Services\RateLimiter;
 use DeployTeam\Intercall\Services\RequestDispatcher;
 use DeployTeam\Intercall\Services\RequestListener;
+use DeployTeam\IntercallLaravel\Services\LaravelRequestListener;
 use DeployTeam\Intercall\Services\TransportManager;
 use DeployTeam\Intercall\Transports\Factories\HttpOutboundTransportFactory;
 use DeployTeam\Intercall\Transports\Factories\RedisInboundTransportFactory;
@@ -205,7 +206,7 @@ class IntercallLaravelServiceProvider extends PackageServiceProvider
         });
 
         $this->app->singleton(RequestListener::class, function ($app): RequestListener {
-            return new RequestListener(
+            $listener = new LaravelRequestListener(
                 $app->make(TransportManager::class),
                 $app->make(Logger::class),
                 $app->make(EventDispatcher::class),
@@ -220,6 +221,8 @@ class IntercallLaravelServiceProvider extends PackageServiceProvider
                 $app->make(HeartbeatChecker::class),
                 config('intercall'),
             );
+            $listener->setContainer($app);
+            return $listener;
         });
 
 
