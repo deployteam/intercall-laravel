@@ -7,6 +7,8 @@ namespace DeployTeam\IntercallLaravel\Bridge;
 use DeployTeam\Intercall\Contracts\Bridge\Redis;
 use Illuminate\Redis\Connections\Connection;
 use Illuminate\Support\Facades\Redis as LaravelRedisFacade;
+use RedisException;
+use Throwable;
 
 class LaravelRedis implements Redis
 {
@@ -23,22 +25,65 @@ class LaravelRedis implements Redis
     {
         try {
             $this->redis()->disconnect();
-        } catch (\Throwable) {
+        } catch (Throwable) {
         }
 
         LaravelRedisFacade::purge($this->connection);
     }
 
-    public function lpush(string $key, string $value): int|false
+    /**
+     * @template TReturn
+     * @param callable(): TReturn $operation
+     * @return TReturn
+     */
+    private function executeWithRetry(callable $operation): mixed
     {
-        $result = $this->redis()->lpush($key, $value);
+        try {
+            return $operation();
+        } catch (Throwable $exception) {
+            if (!$this->isTransientConnectionFailure($exception)) {
+                throw $exception;
+            }
 
-        if ($result === false) {
             $this->reconnect();
-            return $this->redis()->lpush($key, $value);
+
+            return $operation();
+        }
+    }
+
+    private function isTransientConnectionFailure(Throwable $exception): bool
+    {
+        if ($exception instanceof RedisException) {
+            return true;
         }
 
-        return $result;
+        $message = strtolower($exception->getMessage());
+
+        foreach ([
+            'read error on connection',
+            'connection lost',
+            'connection refused',
+            'connection reset',
+            'connection timed out',
+            'went away',
+            'socket error',
+            'error while reading',
+            'readonly',
+            'broken pipe',
+        ] as $needle) {
+            if (str_contains($message, $needle)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function lpush(string $key, string $value): int|false
+    {
+        return $this->executeWithRetry(function () use ($key, $value): int|false {
+            return $this->redis()->lpush($key, $value);
+        });
     }
 
     public function brpop(string|array $keys, int $timeout): ?array
@@ -55,59 +100,52 @@ class LaravelRedis implements Redis
 
     public function setex(string $key, int $ttl, string $value): bool
     {
-        $result = $this->redis()->setex($key, $ttl, $value);
-
-        if ($result === false) {
-            $this->reconnect();
+        return $this->executeWithRetry(function () use ($key, $ttl, $value): bool {
             return (bool) $this->redis()->setex($key, $ttl, $value);
-        }
-
-        return (bool) $result;
+        });
     }
 
     public function get(string $key): ?string
     {
-        $result = $this->redis()->get($key);
-        return $result === false || $result === null ? null : (string) $result;
+        return $this->executeWithRetry(function () use ($key): ?string {
+            $result = $this->redis()->get($key);
+            return $result === false || $result === null ? null : (string) $result;
+        });
     }
 
     public function exists(string $key): bool
     {
-        return (bool) $this->redis()->exists($key);
+        return $this->executeWithRetry(function () use ($key): bool {
+            return (bool) $this->redis()->exists($key);
+        });
     }
 
     public function incr(string $key): int
     {
-        $result = $this->redis()->incr($key);
-
-        if ($result === false) {
-            $this->reconnect();
-            $result = $this->redis()->incr($key);
-        }
-
-        return (int) $result;
+        return $this->executeWithRetry(function () use ($key): int {
+            return (int) $this->redis()->incr($key);
+        });
     }
 
     public function expire(string $key, int $ttl): bool
     {
-        return (bool) $this->redis()->expire($key, $ttl);
+        return $this->executeWithRetry(function () use ($key, $ttl): bool {
+            return (bool) $this->redis()->expire($key, $ttl);
+        });
     }
 
     public function ttl(string $key): int
     {
-        return $this->redis()->ttl($key);
+        return $this->executeWithRetry(function () use ($key): int {
+            return $this->redis()->ttl($key);
+        });
     }
 
     public function publish(string $channel, string $message): int
     {
-        $result = $this->redis()->publish($channel, $message);
-
-        if ($result === false) {
-            $this->reconnect();
+        return $this->executeWithRetry(function () use ($channel, $message): int {
             return (int) $this->redis()->publish($channel, $message);
-        }
-
-        return $result;
+        });
     }
 
     /**
@@ -115,27 +153,31 @@ class LaravelRedis implements Redis
      */
     public function keys(string $pattern): array
     {
-        $keys = $this->redis()->keys($pattern);
-        if (!is_array($keys)) {
-            return [];
-        }
-
-        $prefix = config("database.redis.{$this->connection}.prefix");
-        if ($prefix === null || $prefix === '') {
-            return $keys;
-        }
-
-        return array_map(function ($key) use ($prefix) {
-            if (str_starts_with($key, $prefix)) {
-                return substr($key, strlen($prefix));
+        return $this->executeWithRetry(function () use ($pattern): array {
+            $keys = $this->redis()->keys($pattern);
+            if (!is_array($keys)) {
+                return [];
             }
-            return $key;
-        }, $keys);
+
+            $prefix = config("database.redis.{$this->connection}.prefix");
+            if ($prefix === null || $prefix === '') {
+                return $keys;
+            }
+
+            return array_map(function ($key) use ($prefix) {
+                if (str_starts_with($key, $prefix)) {
+                    return substr($key, strlen($prefix));
+                }
+                return $key;
+            }, $keys);
+        });
     }
 
     public function del(string $key): int
     {
-        return (int) $this->redis()->del($key);
+        return $this->executeWithRetry(function () use ($key): int {
+            return (int) $this->redis()->del($key);
+        });
     }
 
     public function disconnect(): void
