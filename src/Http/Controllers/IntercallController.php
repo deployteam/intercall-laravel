@@ -316,7 +316,24 @@ class IntercallController extends Controller
         $localConfig = $this->systemRegistry->getLocalSystemConfig();
         $tokens = $localConfig->getTokensForSystem($sourceSystem);
 
-        if (empty($tokens)) {
+        if (count($tokens) === 0) {
+            $allTokens = $localConfig->getTokens();
+            $whitelists = array_map(
+                static fn($tokenObj) => is_array($tokenObj->whitelist) ? $tokenObj->whitelist : [$tokenObj->whitelist],
+                $allTokens,
+            );
+
+            logger()->warning('[Intercall HTTP] MissingTokenException diagnostic', [
+                'source_system' => $sourceSystem,
+                'source_system_bytes' => bin2hex($sourceSystem),
+                'local_system_name' => $localConfig->name,
+                'total_tokens_in_registry' => count($allTokens),
+                'whitelists_per_token' => $whitelists,
+                'system_registry_hash' => spl_object_hash($this->systemRegistry),
+                'local_config_hash' => spl_object_hash($localConfig),
+                'pid' => getmypid(),
+            ]);
+
             throw MissingTokenException::forInboundSystem($sourceSystem);
         }
 
