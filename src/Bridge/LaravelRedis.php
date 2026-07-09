@@ -123,7 +123,11 @@ class LaravelRedis implements Redis
     public function incr(string $key): int
     {
         return $this->executeWithRetry(function () use ($key): int {
-            return (int) $this->redis()->incr($key);
+            $result = $this->redis()->incr($key);
+            if ($result === false) {
+                throw new RedisException("INCR command failed for key {$key}");
+            }
+            return (int) $result;
         });
     }
 
@@ -137,7 +141,11 @@ class LaravelRedis implements Redis
     public function ttl(string $key): int
     {
         return $this->executeWithRetry(function () use ($key): int {
-            return $this->redis()->ttl($key);
+            $result = $this->redis()->ttl($key);
+            if ($result === false) {
+                throw new RedisException('TTL command returned false');
+            }
+            return (int) $result;
         });
     }
 

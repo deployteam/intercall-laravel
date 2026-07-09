@@ -130,6 +130,7 @@ class IntercallLaravelServiceProvider extends PackageServiceProvider
                 config('intercall.rate_limit.max_requests', 1000),
                 config('intercall.rate_limit.burst_limit', 50),
                 config('intercall.redis.prefix', 'intercall'),
+                $app->make(Logger::class),
             );
         });
 
