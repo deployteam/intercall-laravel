@@ -81,9 +81,7 @@ class LaravelRedis implements Redis
 
     public function lpush(string $key, string $value): int|false
     {
-        return $this->executeWithRetry(function () use ($key, $value): int|false {
-            return $this->redis()->lpush($key, $value);
-        });
+        return $this->redis()->lpush($key, $value);
     }
 
     public function brpop(string|array $keys, int $timeout): ?array
@@ -122,13 +120,11 @@ class LaravelRedis implements Redis
 
     public function incr(string $key): int
     {
-        return $this->executeWithRetry(function () use ($key): int {
-            $result = $this->redis()->incr($key);
-            if ($result === false) {
-                throw new RedisException("INCR command failed for key {$key}");
-            }
-            return (int) $result;
-        });
+        $result = $this->redis()->incr($key);
+        if ($result === false) {
+            throw new RedisException("INCR command failed for key {$key}");
+        }
+        return (int) $result;
     }
 
     public function expire(string $key, int $ttl): bool
@@ -151,9 +147,7 @@ class LaravelRedis implements Redis
 
     public function publish(string $channel, string $message): int
     {
-        return $this->executeWithRetry(function () use ($channel, $message): int {
-            return (int) $this->redis()->publish($channel, $message);
-        });
+        return (int) $this->redis()->publish($channel, $message);
     }
 
     /**
