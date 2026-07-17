@@ -120,10 +120,25 @@ class LaravelRedis implements Redis
 
     public function incr(string $key): int
     {
-        $result = $this->redis()->incr($key);
+        try {
+            $result = $this->redis()->incr($key);
+        } catch (Throwable $exception) {
+            if (!$this->isTransientConnectionFailure($exception)) {
+                throw $exception;
+            }
+            $this->reconnect();
+            $result = $this->redis()->incr($key);
+        }
+
+        if ($result === false) {
+            $this->reconnect();
+            $result = $this->redis()->incr($key);
+        }
+
         if ($result === false) {
             throw new RedisException("INCR command failed for key {$key}");
         }
+
         return (int) $result;
     }
 
