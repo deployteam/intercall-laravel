@@ -7,14 +7,17 @@ namespace DeployTeam\IntercallLaravel\Services;
 use DeployTeam\Intercall\Services\RequestListener;
 use DeployTeam\Intercall\Transports\Contracts\InboundTransport;
 use Illuminate\Contracts\Container\Container;
+use Illuminate\Contracts\Foundation\Application;
 
 /**
- * Laravel-specific extension of RequestListener that flushes scoped container
- * instances between envelope processings.
+ * Laravel-specific extension of RequestListener that treats each envelope as a
+ * complete request lifecycle: it fires the application's terminating callbacks
+ * (so scoped resources can flush their pending state) and then discards the
+ * scoped container bindings.
  *
- * Without this, long-running intercall workers reuse the same scoped bindings
- * across events, which leaks per-request state (repositories with property-level
- * memoization, in-process caches, etc.) and causes intermittent stale-data bugs.
+ * Without the terminate() call, long-running workers accumulate state in scoped
+ * services (buffers, memoized repositories, in-process caches) that is silently
+ * discarded when the next envelope resets the scope.
  */
 class LaravelRequestListener extends RequestListener
 {
@@ -36,6 +39,9 @@ class LaravelRequestListener extends RequestListener
         try {
             parent::processEnvelope($envelope, $workerId, $transport);
         } finally {
+            if ($this->container instanceof Application) {
+                $this->container->terminate();
+            }
             $this->container?->forgetScopedInstances();
         }
     }
