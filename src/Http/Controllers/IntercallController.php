@@ -7,6 +7,7 @@ namespace DeployTeam\IntercallLaravel\Http\Controllers;
 use DeployTeam\Intercall\Configuration\SystemRegistry;
 use DeployTeam\Intercall\Contracts\Bridge\EventDispatcher;
 use DeployTeam\Intercall\Contracts\Bridge\JobDispatcher;
+use DeployTeam\Intercall\Contracts\IntercallExceptionMapper;
 use DeployTeam\Intercall\Enums\AsyncStatus;
 use DeployTeam\Intercall\Events\AsyncResponseReceived;
 use DeployTeam\Intercall\Events\BaseIntercallEvent;
@@ -39,6 +40,7 @@ class IntercallController extends Controller
         protected EventDispatcher $eventDispatcher,
         protected ListenerRegistry $listenerRegistry,
         protected array $config,
+        protected IntercallExceptionMapper $exceptionMapper,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -91,8 +93,8 @@ class IntercallController extends Controller
                 $cached = $this->idempotency->getCachedResponse($requestId);
 
                 if ($cached !== null) {
-                    if ($cached['error'] !== null) {
-                        return $this->errorResponse($cached['error'], 500);
+                    if ($cached->error !== null) {
+                        return $this->errorResponse($cached->error->message, 500);
                     }
 
                     if ($isAsync) {
@@ -100,13 +102,13 @@ class IntercallController extends Controller
                             'success' => true,
                             'request_id' => $requestId,
                             'status' => 'completed',
-                            'result' => $cached['result'],
+                            'result' => $cached->result,
                         ]);
                     }
 
                     return response()->json([
                         'success' => true,
-                        'result' => $cached['result'],
+                        'result' => $cached->result,
                     ]);
                 }
             }
@@ -163,7 +165,7 @@ class IntercallController extends Controller
             ]);
         } catch (Exception $e) {
             if ($requestId) {
-                $this->idempotency->cacheResponse($requestId, null, $e->getMessage());
+                $this->idempotency->cacheResponse($requestId, null, $this->exceptionMapper->map($e));
             }
 
             return $this->errorResponse($e->getMessage(), 500);
@@ -188,7 +190,7 @@ class IntercallController extends Controller
                             'error' => $e->getMessage(),
                         ]);
 
-                        $this->idempotency->cacheResponse($requestId, null, $e->getMessage());
+                        $this->idempotency->cacheResponse($requestId, null, $this->exceptionMapper->map($e));
 
                         $this->logError('Async handler failed', [
                             'request_id' => $requestId,
@@ -213,7 +215,7 @@ class IntercallController extends Controller
                         'error' => $e->getMessage(),
                     ]);
 
-                    $this->idempotency->cacheResponse($requestId, null, $e->getMessage());
+                    $this->idempotency->cacheResponse($requestId, null, $this->exceptionMapper->map($e));
 
                     $this->logError('Async handler failed', [
                         'request_id' => $requestId,
@@ -232,7 +234,7 @@ class IntercallController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            $this->idempotency->cacheResponse($requestId, null, $e->getMessage());
+            $this->idempotency->cacheResponse($requestId, null, $this->exceptionMapper->map($e));
 
             return $this->errorResponse($e->getMessage(), 500);
         }

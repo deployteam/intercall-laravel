@@ -24,8 +24,11 @@ use DeployTeam\Intercall\Services\IntercallHub;
 use DeployTeam\Intercall\Services\ListenerRegistry;
 use DeployTeam\Intercall\Services\MessageSerializer;
 use DeployTeam\Intercall\Services\RateLimiter;
+use DeployTeam\Intercall\Contracts\IntercallExceptionMapper;
+use DeployTeam\Intercall\Services\ConventionExceptionMapper;
 use DeployTeam\Intercall\Services\RequestDispatcher;
 use DeployTeam\Intercall\Services\RequestListener;
+use DeployTeam\IntercallLaravel\Services\LaravelExceptionMapper;
 use DeployTeam\IntercallLaravel\Services\LaravelRequestListener;
 use DeployTeam\Intercall\Services\TransportManager;
 use DeployTeam\Intercall\Transports\Factories\HttpOutboundTransportFactory;
@@ -207,6 +210,11 @@ class IntercallLaravelServiceProvider extends PackageServiceProvider
             );
         });
 
+        $this->app->singleton(ConventionExceptionMapper::class, fn (): ConventionExceptionMapper => new ConventionExceptionMapper());
+
+        $this->app->singleton(IntercallExceptionMapper::class, fn ($app): LaravelExceptionMapper
+            => new LaravelExceptionMapper($app->make(ConventionExceptionMapper::class)));
+
         $this->app->singleton(RequestListener::class, function ($app): RequestListener {
             $listener = new LaravelRequestListener(
                 $app->make(TransportManager::class),
@@ -223,6 +231,7 @@ class IntercallLaravelServiceProvider extends PackageServiceProvider
                 $app->make(HeartbeatChecker::class),
                 config('intercall'),
                 $this->resolveMiddleware($app, 'intercall.middleware.inbound'),
+                $app->make(IntercallExceptionMapper::class),
             );
             $listener->setContainer($app);
             return $listener;
@@ -251,6 +260,7 @@ class IntercallLaravelServiceProvider extends PackageServiceProvider
                 $app->make(EventDispatcher::class),
                 $app->make(ListenerRegistry::class),
                 config('intercall'),
+                $app->make(IntercallExceptionMapper::class),
             );
         });
     }
