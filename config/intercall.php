@@ -46,6 +46,11 @@ return [
         'format' => env('INTERCALL_COMPRESSION_FORMAT', 'msgpack'),
     ],
 
+    'middleware' => [
+        'outbound' => [],
+        'inbound' => [],
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Async Request Settings

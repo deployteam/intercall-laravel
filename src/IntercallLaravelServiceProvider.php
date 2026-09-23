@@ -203,6 +203,7 @@ class IntercallLaravelServiceProvider extends PackageServiceProvider
                 $app->make(SystemRegistry::class),
                 $app->make(HeartbeatChecker::class),
                 config('intercall'),
+                $this->resolveMiddleware($app, 'intercall.middleware.outbound'),
             );
         });
 
@@ -221,6 +222,7 @@ class IntercallLaravelServiceProvider extends PackageServiceProvider
                 $app->make(ListenerRegistry::class),
                 $app->make(HeartbeatChecker::class),
                 config('intercall'),
+                $this->resolveMiddleware($app, 'intercall.middleware.inbound'),
             );
             $listener->setContainer($app);
             return $listener;
@@ -251,5 +253,21 @@ class IntercallLaravelServiceProvider extends PackageServiceProvider
                 config('intercall'),
             );
         });
+    }
+
+    /**
+     * @param \Illuminate\Contracts\Container\Container $app
+     * @return array<int, object>
+     */
+    private function resolveMiddleware($app, string $configKey): array
+    {
+        $entries = (array) config($configKey, []);
+        $resolved = [];
+
+        foreach ($entries as $entry) {
+            $resolved[] = is_string($entry) ? $app->make($entry) : $entry;
+        }
+
+        return $resolved;
     }
 }
