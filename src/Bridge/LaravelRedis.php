@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DeployTeam\IntercallLaravel\Bridge;
 
 use DeployTeam\Intercall\Contracts\Bridge\Redis;
+use DeployTeam\Intercall\Exceptions\Transport\RedisConnectionException;
 use Illuminate\Redis\Connections\Connection;
 use Illuminate\Support\Facades\Redis as LaravelRedisFacade;
 use RedisException;
@@ -107,7 +108,16 @@ class LaravelRedis implements Redis
     {
         return $this->executeWithRetry(function () use ($key): ?string {
             $result = $this->redis()->get($key);
-            return $result === false || $result === null ? null : (string) $result;
+
+            if ($result === false || $result === null) {
+                return null;
+            }
+
+            if (!is_string($result)) {
+                throw RedisConnectionException::unexpectedReplyType('GET', $key, get_debug_type($result));
+            }
+
+            return $result;
         });
     }
 
