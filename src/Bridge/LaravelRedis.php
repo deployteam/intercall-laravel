@@ -52,6 +52,28 @@ class LaravelRedis implements Redis
         }
     }
 
+    /**
+     * @param callable(): mixed $operation
+     */
+    private function executeHealingOnFailure(callable $operation): mixed
+    {
+        try {
+            $result = $operation();
+        } catch (Throwable $exception) {
+            if ($this->isTransientConnectionFailure($exception)) {
+                $this->reconnect();
+            }
+
+            throw $exception;
+        }
+
+        if ($result === false) {
+            $this->reconnect();
+        }
+
+        return $result;
+    }
+
     private function isTransientConnectionFailure(Throwable $exception): bool
     {
         if ($exception instanceof RedisException) {
@@ -82,7 +104,7 @@ class LaravelRedis implements Redis
 
     public function lpush(string $key, string $value): int|false
     {
-        return $this->redis()->lpush($key, $value);
+        return $this->executeHealingOnFailure(fn(): mixed => $this->redis()->lpush($key, $value));
     }
 
     public function brpop(string|array $keys, int $timeout): ?array
@@ -206,7 +228,7 @@ class LaravelRedis implements Redis
 
     public function publish(string $channel, string $message): int
     {
-        return (int) $this->redis()->publish($channel, $message);
+        return (int) $this->executeHealingOnFailure(fn(): mixed => $this->redis()->publish($channel, $message));
     }
 
     /**
