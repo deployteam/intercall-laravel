@@ -60,6 +60,21 @@ final class LaravelRedisTest extends TestCase
     }
 
     #[Test]
+    public function dropsConnectionWhenBrpopFails(): void
+    {
+        Redis::shouldReceive('brpop')
+            ->once()
+            ->with('test-key', 10)
+            ->andReturn(false);
+        Redis::shouldReceive('disconnect')->once();
+        Redis::shouldReceive('purge')->once()->with('default');
+
+        $result = $this->sut->brpop('test-key', 10);
+
+        static::assertNull($result);
+    }
+
+    #[Test]
     public function setsValueWithTtl(): void
     {
         Redis::shouldReceive('setex')

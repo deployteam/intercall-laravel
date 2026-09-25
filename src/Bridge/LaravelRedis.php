@@ -87,14 +87,48 @@ class LaravelRedis implements Redis
 
     public function brpop(string|array $keys, int $timeout): ?array
     {
-        $result = $this->redis()->brpop($keys, $timeout);
-        return $result === null || $result === false ? null : $result;
+        return $this->blockingPop(fn(): mixed => $this->redis()->brpop($keys, $timeout));
     }
 
     public function blpop(string|array $keys, int $timeout): ?array
     {
-        $result = $this->redis()->blpop($keys, $timeout);
-        return $result === null || $result === false ? null : $result;
+        return $this->blockingPop(fn(): mixed => $this->redis()->blpop($keys, $timeout));
+    }
+
+    /**
+     * A blocking pop is destructive, so a failed call is never re-issued: replaying it
+     * could consume a second message. The connection is dropped instead, leaving any
+     * unread reply behind with it, and the caller's next cycle starts on a fresh one.
+     *
+     * @param callable(): mixed $operation
+     * @return array<int, string>|null
+     */
+    private function blockingPop(callable $operation): ?array
+    {
+        try {
+            $result = $operation();
+        } catch (Throwable $exception) {
+            if (!$this->isTransientConnectionFailure($exception)) {
+                throw $exception;
+            }
+
+            $this->reconnect();
+
+            return null;
+        }
+
+        if ($result === false) {
+            $this->reconnect();
+
+            return null;
+        }
+
+        if (!is_array($result) || $result === []) {
+            return null;
+        }
+
+        /** @var array<int, string> $result */
+        return $result;
     }
 
     public function setex(string $key, int $ttl, string $value): bool
