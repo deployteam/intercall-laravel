@@ -7,6 +7,7 @@ namespace DeployTeam\IntercallLaravel\Console;
 use DeployTeam\Intercall\Configuration\SystemRegistry;
 use DeployTeam\Intercall\Console\ListenCommand as CoreListenCommand;
 use DeployTeam\Intercall\Contracts\Bridge\Logger;
+use DeployTeam\Intercall\Contracts\Bridge\Redis;
 use DeployTeam\Intercall\Enums\LogLevel;
 use DeployTeam\Intercall\Services\RequestListener;
 use DeployTeam\IntercallLaravel\Bridge\LaravelConsoleOutput;
@@ -22,8 +23,12 @@ class ListenCommand extends Command
 
     protected $description = 'Listen for incoming inter-system requests';
 
-    public function handle(RequestListener $listener, SystemRegistry $systemRegistry, Logger $logger): int
-    {
+    public function handle(
+        RequestListener $listener,
+        SystemRegistry $systemRegistry,
+        Logger $logger,
+        Redis $redis,
+    ): int {
         $this->configureLogLevel($logger);
 
         $output = new LaravelConsoleOutput($this);
@@ -51,6 +56,7 @@ class ListenCommand extends Command
             $restartCommand,
             $pidFilePath,
             $shutdownTimeout,
+            $redis,
         );
 
         return $command->execute();
