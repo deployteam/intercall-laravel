@@ -155,6 +155,10 @@ return [
         'enabled' => env('INTERCALL_HTTP_FALLBACK_ENABLED', true),
         'endpoint' => env('INTERCALL_HTTP_ENDPOINT', '/intercall'),
         'route_name' => env('INTERCALL_HTTP_ROUTE_NAME', 'intecall.handle'),
+        'allowed_ips' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('INTERCALL_HTTP_ALLOWED_IPS', '')),
+        ))),
     ],
 
     /*
