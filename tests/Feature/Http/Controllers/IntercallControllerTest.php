@@ -76,6 +76,110 @@ final class IntercallControllerTest extends TestCase
     }
 
     #[Test]
+    public function rejectsCallbackWithoutRequiredHeaders(): void
+    {
+        $response = $this->postJson('/api/intercall', [
+            'message_type' => 'callback',
+            'request_id' => 'request-1',
+            'original_event_name' => 'some.event',
+            'success' => true,
+            'result' => [],
+        ]);
+
+        $response->assertStatus(400)
+            ->assertJson([
+                'success' => false,
+                'error' => 'Missing required headers: X-Intercall-Source, X-Intercall-Event',
+            ]);
+    }
+
+    #[Test]
+    public function rejectsCallbackWithoutAuthenticationToken(): void
+    {
+        config()->set('intercall.auth.enabled', true);
+
+        $response = $this->postJson('/api/intercall', [
+            'message_type' => 'callback',
+            'request_id' => 'request-1',
+            'original_event_name' => 'some.event',
+            'success' => true,
+            'result' => [],
+        ], [
+            'X-Intercall-Source' => 'system1',
+            'X-Intercall-Event' => 'callback.response',
+        ]);
+
+        $response->assertStatus(401)
+            ->assertJson([
+                'success' => false,
+                'error' => 'Missing authentication token',
+            ]);
+    }
+
+    #[Test]
+    public function rejectsCallbackWithNonStringEventName(): void
+    {
+        $response = $this->postJson('/api/intercall', [
+            'message_type' => 'callback',
+            'request_id' => 'request-1',
+            'original_event_name' => ['some.event'],
+            'success' => true,
+            'result' => [],
+        ], [
+            'X-Intercall-Source' => 'system1',
+            'X-Intercall-Event' => 'callback.response',
+        ]);
+
+        $response->assertStatus(400)
+            ->assertJson([
+                'success' => false,
+                'error' => 'Invalid callback payload',
+            ]);
+    }
+
+    #[Test]
+    public function rejectsCallbackWithNonStringRequestId(): void
+    {
+        $response = $this->postJson('/api/intercall', [
+            'message_type' => 'callback',
+            'request_id' => ['request-1'],
+            'original_event_name' => 'some.event',
+            'success' => true,
+            'result' => [],
+        ], [
+            'X-Intercall-Source' => 'system1',
+            'X-Intercall-Event' => 'callback.response',
+        ]);
+
+        $response->assertStatus(400)
+            ->assertJson([
+                'success' => false,
+                'error' => 'Invalid callback payload',
+            ]);
+    }
+
+    #[Test]
+    public function acceptsCallbackWithRequiredHeaders(): void
+    {
+        $response = $this->postJson('/api/intercall', [
+            'message_type' => 'callback',
+            'request_id' => 'request-1',
+            'original_event_name' => 'some.event',
+            'success' => true,
+            'result' => [],
+        ], [
+            'X-Intercall-Source' => 'system1',
+            'X-Intercall-Event' => 'callback.response',
+        ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+                'message' => 'Callback received',
+            ]);
+    }
+
+    #[Test]
     public function registersRoute(): void
     {
         $result = Route::has('intercall.handle');

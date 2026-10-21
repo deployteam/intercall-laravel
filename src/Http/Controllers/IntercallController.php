@@ -52,10 +52,6 @@ class IntercallController extends Controller
             $requestId = $request->header('X-Intercall-Request-Id');
             $payload = $request->all();
 
-            if (isset($payload['message_type']) && $payload['message_type'] === 'callback') {
-                return $this->handleCallback($payload);
-            }
-
             if (!$sourceSystem || !$eventName) {
                 return $this->errorResponse(
                     'Missing required headers: X-Intercall-Source, X-Intercall-Event',
@@ -87,6 +83,10 @@ class IntercallController extends Controller
                         ['retry_after' => $this->rateLimiter->resetAt($sourceSystem) - time()],
                     );
                 }
+            }
+
+            if (isset($payload['message_type']) && $payload['message_type'] === 'callback') {
+                return $this->handleCallback($payload);
             }
 
             if ($requestId) {
@@ -249,6 +249,10 @@ class IntercallController extends Controller
             $success = $callbackData['success'] ?? false;
 
             $eventName = $callbackData['original_event_name'] ?? null;
+
+            if (!is_string($requestId) || ($eventName !== null && !is_string($eventName)) || !is_bool($success)) {
+                return $this->errorResponse('Invalid callback payload', 400);
+            }
 
             $responseEvent = null;
             if ($eventName !== null) {
